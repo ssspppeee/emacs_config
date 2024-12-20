@@ -18,6 +18,9 @@
 (when (file-exists-p custom-file)
   (load custom-file 'no-error 'no-message))
 
+;;; Move backups to their own folder
+(setq backup-directory-alist '(("." . "~/.emacs_bak")))
+
 ;;; UI Customization
 (load-theme 'modus-vivendi-tinted t)
 (scroll-bar-mode -1)
