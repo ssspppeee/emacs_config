@@ -22,13 +22,6 @@
 (load-theme 'modus-vivendi-tinted t)
 (scroll-bar-mode -1)
 
-;;; Package Management
-(require 'package)
-(setq package-archives
-      '(("melpa" . "https://melpa.org/packages/")
-        ("gnu" . "https://elpa.gnu.org/packages/")))
-(package-initialize)
-
 ;;; Python LSP (lsp-pyright)
 (use-package lsp-pyright
   :ensure t
