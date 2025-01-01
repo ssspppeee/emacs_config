@@ -4,6 +4,7 @@
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("gnu" . "https://elpa.gnu.org/packages/")
+			 ("nongnu" . "https://elpa.nongnu.org/nongnu/")
                          ("org" . "https://orgmode.org/elpa/")))
 
 (unless (package-installed-p 'use-package)
@@ -14,9 +15,9 @@
 (setq use-package-always-ensure t)
 
 ;; Load custom file (optional for cleaner `init.el`)
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(when (file-exists-p custom-file)
-  (load custom-file 'no-error 'no-message))
+(setq custom-file (locate-user-emacs-file "custom.el"))
+(load custom-file :no-error-if-file-is-missing)
+
 ;; Set width to 80
 (setq-default fill-column 80)
 
@@ -26,6 +27,35 @@
 ;;; UI Customization
 (load-theme 'modus-vivendi-tinted t)
 (scroll-bar-mode -1)
+
+;; ace-window
+(use-package ace-window
+  :ensure t
+  :bind (("M-o" . ace-window))
+  :config
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (setq aw-background nil))
+
+;; avy
+(use-package avy
+  :ensure t
+  :bind (("C-'" . avy-goto-char-timer))
+  :config (setq avy-timeout-seconds 0.1))
+
+;; org-roam
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory "~/org/roam")
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert))
+  :config
+  (org-roam-setup))
+
+;; eat
+(use-package eat
+  :ensure t)
 
 ;;; Python LSP (lsp-pyright)
 (use-package lsp-pyright
