@@ -17,6 +17,8 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file 'no-error 'no-message))
+;; Set width to 80
+(setq-default fill-column 80)
 
 ;;; Move backups to their own folder
 (setq backup-directory-alist '(("." . "~/.emacs_bak")))
