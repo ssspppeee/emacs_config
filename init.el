@@ -28,6 +28,10 @@
 (load-theme 'modus-vivendi-tinted t)
 (scroll-bar-mode -1)
 
+;; anki-editor
+(use-package anki-editor
+  :ensure t)
+
 ;; ace-window
 (use-package ace-window
   :ensure t
@@ -41,6 +45,51 @@
   :ensure t
   :bind (("C-'" . avy-goto-char-timer))
   :config (setq avy-timeout-seconds 0.1))
+
+;; AUCTeX
+(use-package auctex
+  :ensure t)
+
+;; org
+(setq org-agenda-files '("~/org/project.org"
+			 "~/org/inbox.org"))
+(setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
+
+;; org-babel
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((python . t)
+   (emacs-lisp . t)))
+
+(defun enable-auto-revert-for-pdf ()
+  "Enable `auto-revert-mode` for PDF files only."
+  (when (string-equal (file-name-extension buffer-file-name) "pdf")
+    (auto-revert-mode 1)))
+(add-hook 'doc-view-mode-hook #'enable-auto-revert-for-pdf)
+
+;; org-capture
+(global-set-key (kbd "C-c c") 'org-capture)
+(setq org-my-anki-file "~/org/anki.org")
+(setq org-my-inbox-file "~/org/inbox.org")
+(setq org-capture-templates
+      '(("a" "Anki basic"
+         entry
+         (file+headline org-my-anki-file "Dispatch Shelf")
+         "* %<%H:%M>\n:PROPERTIES:\n:ANKI_NOTE_TYPE: Basic\n:ANKI_DECK: Mega\n:END:\n** Front\n%?\n** Back\n%x\n")
+	("q" "Quick note"
+	 entry
+	 (file+headline org-my-inbox-file "Inbox")
+	 "* %^{Enter note}\n%U\n"
+	 :immediate-finish t)
+	("i" "Idea"
+	 entry
+	 (file+headline org-my-inbox-file "Inbox")
+	 "* %^{Enter note}\n%U\n")
+	("t" "To do"
+	 entry
+	 (file+headline org-my-inbox-file "Inbox")
+	 "* TODO %^{Enter note}\n%^T\n"
+	 :immediate-finish t)))
 
 ;; org-roam
 (use-package org-roam
@@ -56,6 +105,7 @@
 ;; eat
 (use-package eat
   :ensure t)
+
 
 ;;; Python LSP (lsp-pyright)
 (use-package lsp-pyright
