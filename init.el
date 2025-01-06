@@ -24,9 +24,20 @@
 ;;; Move backups to their own folder
 (setq backup-directory-alist '(("." . "~/.emacs_bak")))
 
+;; recentf-mode
+(recentf-mode t)
+
 ;;; UI Customization
 (load-theme 'modus-vivendi-tinted t)
 (scroll-bar-mode -1)
+
+;; SLIME
+(use-package slime
+  :ensure t
+  :config
+  (setq inferior-lisp-program "sbcl")
+  (setq slime-lisp-implementations
+	'((sbcl ("sbcl" "--dynamic-space-size" "4096")))))
 
 ;; anki-editor
 (use-package anki-editor
@@ -50,44 +61,67 @@
 (use-package auctex
   :ensure t)
 
+;; tooltip-mode does not work well with macOS fullscreen
+(defun disable-tooltip-in-doc-view ()
+  (tooltip-mode -1))
+(add-hook 'doc-view-mode-hook 'disable-tooltip-in-doc-view)
+
+;; gnuplot
+(use-package gnuplot
+  :ensure t)
+(use-package gnuplot-mode
+  :ensure t)
+
 ;; org
-(setq org-agenda-files '("~/org/project.org"
-			 "~/org/inbox.org"))
+(setq org-agenda-files '("~/org/inbox.org" "~/org/project.org"))
 (setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
+(global-set-key (kbd "C-c t") 'org-todo-list)
 
 ;; org-babel
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((python . t)
+   (C . t)
+   (lisp . t)
    (emacs-lisp . t)))
 
+;; org LaTeX/PDF settings
 (defun enable-auto-revert-for-pdf ()
   "Enable `auto-revert-mode` for PDF files only."
   (when (string-equal (file-name-extension buffer-file-name) "pdf")
     (auto-revert-mode 1)))
 (add-hook 'doc-view-mode-hook #'enable-auto-revert-for-pdf)
+(setq org-latex-src-block-backend 'listings)
 
 ;; org-capture
 (global-set-key (kbd "C-c c") 'org-capture)
 (setq org-my-anki-file "~/org/anki.org")
 (setq org-my-inbox-file "~/org/inbox.org")
 (setq org-capture-templates
-      '(("a" "Anki basic"
+      '(("v" "Anki vocabulary"
          entry
-         (file+headline org-my-anki-file "Dispatch Shelf")
+         (file org-my-anki-file)
+         "* %<%H:%M>\n:PROPERTIES:\n:ANKI_NOTE_TYPE: Vocabulary (two-sided with sentence)\n:ANKI_DECK: Mega\n:END:\n** Front\n%?\n** Back\n** Sentence\n** Language\n")
+	("w" "Anki vocabulary (auto)" ;; TODO Doesn't work 
+         entry
+         (file org-my-anki-file)
+         "* %<%H:%M>\n:PROPERTIES:\n:ANKI_NOTE_TYPE: Vocabulary (two-sided with sentence)\n:ANKI_DECK: Mega\n:END:\n** Front\n%^{Word|%(thing-at-point 'word)}\n** Back\n%?\n** Sentence\n%^{Sentence|%(thing-at-point 'sentence)}\n** Language\nGerman\n")
+	("b" "Anki basic"
+         entry
+         (file org-my-anki-file)
          "* %<%H:%M>\n:PROPERTIES:\n:ANKI_NOTE_TYPE: Basic\n:ANKI_DECK: Mega\n:END:\n** Front\n%?\n** Back\n%x\n")
 	("q" "Quick note"
 	 entry
-	 (file+headline org-my-inbox-file "Inbox")
-	 "* %^{Enter note}\n%U\n"
+	 (file org-my-inbox-file)
+	 "* TODO %^{Enter note}\n"
 	 :immediate-finish t)
-	("i" "Idea"
+	("n" "Note"
 	 entry
-	 (file+headline org-my-inbox-file "Inbox")
-	 "* %^{Enter note}\n%U\n")
+	 (file org-my-inbox-file)
+	 "* TODO %?\n")
 	("t" "To do"
 	 entry
-	 (file+headline org-my-inbox-file "Inbox")
+	 (file org-my-inbox-file)
 	 "* TODO %^{Enter note}\n%^T\n"
 	 :immediate-finish t)))
 
@@ -210,6 +244,14 @@
          ("M-s" . consult-history)                 ;; Minibuffer history
          ("M-r" . consult-history))               ;; Reverse minibuffer history
   :hook (completion-list-mode . consult-preview-at-point-mode))
+
+;; consult-dir
+(use-package consult-dir
+  :ensure t
+  :bind (("C-x C-d" . consult-dir)
+         :map vertico-map
+         ("C-x C-d" . consult-dir)
+         ("C-x C-j" . consult-dir-jump-file)))
 
 ;;; Contextual Actions (Embark + Consult Integration)
 (use-package embark
