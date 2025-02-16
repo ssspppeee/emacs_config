@@ -18,6 +18,17 @@
 (setq custom-file (locate-user-emacs-file "custom.el"))
 (load custom-file :no-error-if-file-is-missing)
 
+;; Set PATH (on macOS, Emacs does not inherit the shell path when started from
+;; the UI
+(defun set-exec-path-from-shell-path ()
+  (interactive)
+  (let ((shell-path (shell-command-to-string
+			  "$SHELL --login -c 'echo -n $PATH'"
+                          )))
+    (setenv "PATH" shell-path)
+    (setq exec-path (split-string shell-path path-separator))))
+(set-exec-path-from-shell-path)
+
 ;; Set width to 80
 (setq-default fill-column 80)
 
@@ -28,8 +39,42 @@
 (recentf-mode t)
 
 ;;; UI Customization
-(load-theme 'modus-vivendi-tinted t)
+(load-theme 'modus-operandi-tinted t)
+(add-to-list 'default-frame-alist
+             '(font . "Inconsolata-16"))
 (scroll-bar-mode -1)
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+
+(defun match-fringe-to-background ()
+  "Set the fringe colour to match the background colour."
+  (let ((bg-colour (face-background 'default)))
+    (set-face-attribute 'fringe nil :background bg-colour)))
+(match-fringe-to-background)
+(add-hook 'after-load-theme-hook #'match-fringe-to-background)
+
+;; elfeed
+(use-package elfeed
+  :ensure t)
+
+;; citar
+(use-package citar
+  :custom
+  (citar-bibliography '("~/bib/references.bib"))
+  (citar-library-paths '("~/doc/papers"))
+  :hook
+  (LaTeX-mode . citar-capf-setup)
+  (org-mode . citar-capf-setup)
+  :ensure t)
+(use-package citar-embark
+  :after citar embark
+  :no-require
+  :config (citar-embark-mode)
+  :ensure t)
+(use-package citar-org-roam
+  :after (citar org-roam)
+  :config (citar-org-roam-mode)
+  :ensure t)
 
 ;; SLIME
 (use-package slime
